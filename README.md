@@ -12,7 +12,7 @@
 
 | Nombre | Código | Usuario de GitHub |
 |---|---|---|
-| Gustavo Adolfo Buelvas Macea | [1003500311 ] | [@TavoBuelvas](https://github.com/TavoBuelvas) |
+| Gustavo Adolfo Buelvas Macea | [1003500311] | [@TavoBuelvas](https://github.com/TavoBuelvas) |
 | Alberto Fontalvo Pineda | [código] | [@usuario] |
 | Alexander Ortega Muñoz | [código] | [@usuario] |
 | Esteban Urueña Sanmiguel | [código] | [@usuario] |
@@ -136,7 +136,7 @@ ejecutarlo diez veces produce exactamente el mismo resultado y no duplica regist
 │
 ├── docs               <- Figuras del análisis exploratorio.
 │
-├── sql                <- Script de recreación del esquema.
+├── sql                <- crear_esquema.sql: DDL de la bodega y consultas de verificación.
 │
 ├── config.py          <- Rutas y parámetros compartidos por todas las etapas.
 │
@@ -257,6 +257,10 @@ documenta la segunda fuente de forma legible y permite reutilizarla sin volver a
 | `dim_departamento` | 76 |
 | `dim_fecha` | 143 |
 | `hechos_ventas` | 416.615 |
+
+El esquema está documentado también como SQL plano en
+[`sql/crear_esquema.sql`](sql/crear_esquema.sql), idéntico al DDL que ejecuta `load/cargar.py`,
+con las consultas de verificación de conteos e integridad referencial incluidas al final.
 
 ### 8.4 Modelo
 
@@ -388,6 +392,34 @@ hechos apunten a dimensiones reales.
 | Integridad de las uniones | — | `validate="many_to_one"` en las tres uniones + aserción sobre el conteo de filas |
 | Nulos en el dataset integrado | — | Ninguna columna con nulos, salvo los rezagos en las primeras semanas de cada serie |
 
+### Evidencia de la corrección de la bandera de festivos
+
+Esta es la consulta que demuestra el hallazgo central del proyecto. Son las diez semanas de mayor
+venta de toda la cadena, con la bandera original y la corregida al lado:
+
+| Fecha | Venta (millones) | `IsHoliday` original | `IsHoliday_Corregido` |
+|---|---|---|---|
+| 2010-12-24 | 80,9 | **0** | **1** |
+| 2011-12-23 | 76,9 | **0** | **1** |
+| 2011-11-25 | 66,5 | 1 | 1 |
+| 2010-11-26 | 65,8 | 1 | 1 |
+| 2010-12-17 | 61,8 | 0 | 0 |
+| 2011-12-16 | 60,0 | 0 | 0 |
+| 2010-12-10 | 55,7 | 0 | 0 |
+| 2011-12-09 | 55,5 | 0 | 0 |
+| 2012-04-06 | 53,5 | 0 | 0 |
+| 2012-07-06 | 51,2 | 0 | 0 |
+
+**Las dos semanas de mayor facturación del histórico —las de Navidad— venían sin marcar.** Son
+justo las dos que el negocio más necesita anticipar. La corrección afecta exactamente dos de las
+143 semanas, pero son las dos que concentran 158 millones de venta.
+
+De Navidad, la bandera original solo marcaba las semanas del 31 de diciembre de 2010 y del 30 de
+diciembre de 2011: la semana *siguiente* al pico, con las tiendas ya vacías. Un modelo entrenado
+con esa bandera aprende que "festivo" significa venta baja, que es lo contrario de lo que pasa.
+La corrección no mueve la marca, la **agrega** donde faltaba, y conserva la original en
+`dim_fecha.IsHoliday` para que el cambio sea auditable con esta misma consulta.
+
 **Sobre los nulos de los rezagos.** `Ventas_t_menos_1` tiene 6.200 nulos y `Ventas_t_menos_52`
 tiene 155.541. No son un defecto: son la consecuencia honesta de construir los rezagos por unión
 de fecha. La primera semana de cada serie no tiene semana anterior, y el primer año completo no
@@ -511,8 +543,8 @@ Pipeline completo en 32.3 s
   puede agrupar por línea de producto, que es la pregunta de negocio inmediatamente siguiente.
 - **Trabajo futuro:** validación cruzada temporal deslizante en lugar de un solo corte;
   construcción de un modelo por tipo de tienda; incorporación de una fuente meteorológica de
-  mayor resolución; y publicación del script de recreación del esquema en `sql/` para que la
-  bodega pueda reconstruirse sin ejecutar el pipeline completo.
+  mayor resolución; y un modelo específico para las dos semanas de Navidad, que por sí solas
+  concentran 158 millones de venta y hoy comparten modelo con una semana cualquiera de marzo.
 
 ## 13. Referencias
 
