@@ -14,8 +14,7 @@
 |---|---|---|
 | Gustavo Adolfo Buelvas Macea | [1003500311] | [@TavoBuelvas](https://github.com/TavoBuelvas) |
 | Alberto Fontalvo Pineda | [código] | [@usuario] |
-| Alexander Ortega Muñoz | [código] | [@usuario] |
-| Esteban Urueña Sanmiguel | [código] | [@usuario] |
+| Alexander Ortega Muñoz | [22615802] |[@alexom2279-boop](https://github.com/TavoBuelvas)|
 
 ## Tabla de contenido
 
