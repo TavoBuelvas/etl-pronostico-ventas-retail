@@ -13,7 +13,7 @@
 | Nombre | Código | Usuario de GitHub |
 |---|---|---|
 | Gustavo Adolfo Buelvas Macea | [1003500311] | [@TavoBuelvas](https://github.com/TavoBuelvas) |
-| Alberto Fontalvo Pineda | [código] | [@usuario] |
+| Alberto Fontalvo Pineda | [1144025033] | [https://github.com/FontalvoUAO] |
 | Alexander Ortega Muñoz | [código] | [@usuario] |
 | Esteban Urueña Sanmiguel | [código] | [@usuario] |
 
@@ -614,4 +614,3 @@ Pipeline completo en 32.3 s
   Las decisiones técnicas, la verificación de los resultados y la ejecución del pipeline son del
   equipo; todas las cifras reportadas provienen de corridas propias y verificables con el comando
   de la sección 7.
-prueba 
