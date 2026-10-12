@@ -614,3 +614,4 @@ Pipeline completo en 32.3 s
   Las decisiones técnicas, la verificación de los resultados y la ejecución del pipeline son del
   equipo; todas las cifras reportadas provienen de corridas propias y verificables con el comando
   de la sección 7.
+prueba 
