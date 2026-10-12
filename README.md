@@ -452,6 +452,58 @@ comercial y 1 en el resto. Es la métrica oficial de la competencia original, y 
 precisamente los errores que más cuestan en el negocio: equivocarse en la semana de Navidad vale
 cinco veces más que equivocarse en una semana cualquiera de marzo.
 
+### Interpretación de las métricas
+
+**Qué significa el error en términos del negocio.** El MAE de 1.279 dice que, en promedio, el
+pronóstico de un departamento en una semana se desvía en 1.279 unidades monetarias de la venta
+real. Frente a una venta promedio de 15.989 eso es un **8 %**. Conviene mirar también la mediana,
+que es de 7.674: la distribución está muy sesgada por unos pocos departamentos grandes, de modo
+que para el departamento típico el error representa cerca del 17 %. En operación, esto significa
+que el pedido de reposición se equivoca en menos de una décima parte para los departamentos
+grandes, y que los departamentos pequeños siguen necesitando criterio humano.
+
+**Por qué el RMSE es más del doble del MAE.** El RMSE eleva los errores al cuadrado antes de
+promediarlos, así que castiga mucho más las equivocaciones grandes. Si todos los errores fueran
+parecidos, las dos métricas se acercarían. La razón RMSE/MAE es de 2,12 en XGBoost, lo que indica
+que **la mayoría de las semanas se pronostican bien y unas pocas se pronostican muy mal**. El
+error no está repartido: está concentrado. Y las semanas donde se concentra son las de evento
+comercial, que son justamente las difíciles.
+
+**La lectura más importante: el WMAE.** El WMAE pondría peso 5 a las semanas de evento y peso 1 al
+resto, por lo que es siempre mayor que el MAE. Lo revelador es cuánto mayor:
+
+| Modelo | MAE | WMAE | WMAE/MAE | Mejora vs. persistencia (MAE) | Mejora vs. persistencia (WMAE) |
+|---|---|---|---|---|---|
+| Persistencia | 1.521 | 1.671 | 1,099 | — | — |
+| Regresión lineal | 1.408 | 1.564 | 1,111 | 7,4 % | 6,4 % |
+| **XGBoost** | **1.279** | **1.363** | **1,066** | **15,9 %** | **18,4 %** |
+
+XGBoost es el único modelo que **reduce** la razón WMAE/MAE frente a la persistencia (1,066 contra
+1,099), y su mejora es mayor medida en WMAE (18,4 %) que en MAE (15,9 %). Es decir: el modelo
+aporta más justamente donde el negocio más lo necesita, en las semanas de temporada. La regresión
+lineal hace lo contrario —empeora la razón a 1,111— porque no puede representar el salto de
+Navidad, solo puede inclinar una recta.
+
+**Por qué el modelo no lineal se justifica.** La regresión lineal apenas supera a la persistencia
+en un 7,4 %: con una relación puramente lineal, predecir la semana siguiente casi no es mejor que
+copiar la semana anterior. XGBoost duplica esa ganancia. La diferencia entre los dos es la
+evidencia de que la relación entre las variables y la venta no es lineal, y es la razón de haber
+pasado a un modelo de árboles.
+
+**Por qué no se reportan MAPE ni sMAPE.** Son las métricas porcentuales que primero se piensan, y
+aquí serían engañosas: el 5,6 % de los registros del periodo de prueba tiene una venta en valor
+absoluto menor a 100, el 1,1 % menor a 10, y 66 registros son cero o negativos. Un error
+porcentual divide por la venta real, de modo que esos casi-ceros producen porcentajes enormes o
+indefinidos que dominarían el promedio y harían ver peor un modelo que en realidad acertó por
+pocas unidades. Se eligieron por eso tres métricas en unidades absolutas, cada una con un propósito
+distinto: el MAE para el error típico, el RMSE para detectar si hay errores extremos, y el WMAE
+para ponderar según el valor comercial de cada semana.
+
+**Qué queda por mejorar.** El diagnóstico es claro y está en las tres métricas juntas: el error
+promedio ya es bajo, pero sigue concentrado en pocas semanas de alta facturación. La vía de mejora
+no es agregar más variables de contexto, sino tratar las semanas de evento como un problema
+aparte, con su propio modelo o con más historia de temporadas.
+
 ### Variables más influyentes (XGBoost)
 
 | Variable | Importancia |
