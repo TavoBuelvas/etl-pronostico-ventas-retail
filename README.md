@@ -274,7 +274,6 @@ y produciría métricas infladas que no se sostienen en producción. El escalado
 
 ## 9. Modelo y diccionario de datos
 
-```mermaid
 erDiagram
     dim_tienda       ||--o{ hechos_ventas : Store
     dim_departamento ||--o{ hechos_ventas : Dept
@@ -310,7 +309,7 @@ erDiagram
         REAL Ventas_t_menos_52
         REAL Media_Movil_4
     }
-```
+
 
 El grano de la tabla de hechos es **una tienda, un departamento, una semana**. La llave primaria
 compuesta `(Store, Dept, Date)` impide por diseño que se cuele un registro duplicado, incluso si
